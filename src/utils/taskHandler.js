@@ -37,15 +37,6 @@ async function handleTwitterTask(bot, chatId, user) {
     await user.save();
 }
 
-async function handleTelegramTask(bot, chatId, user) {
-    const message = `Please join our Telegram group:\n${TELEGRAM_GROUP_LINK}\n\nClick the button below once you've joined.`;
-    const options = {
-        reply_markup: {
-            inline_keyboard: [[{ text: "I've joined", callback_data: "telegram_joined" }]]
-        }
-    };
-    await bot.sendMessage(chatId, message, options);
-}
 
 async function handleWalletTask(bot, chatId, user) {
     await bot.sendMessage(chatId, "Please send your ERC-20 wallet address to receive your $AGO tokens.");
@@ -70,7 +61,7 @@ async function handleTelegramTask(bot, chatId, user) {
     const message = `Please join our Telegram group:\n${TELEGRAM_GROUP_LINK}\n\nClick the button below once you've joined.`;
     const options = {
         reply_markup: {
-            inline_keyboard: [[{ text: "I've joined", callback_data: "verify_telegram_join" }]]
+            inline_keyboard: [[{ text: "I've joined", callback_data: "telegram_join" }]]
         }
     };
     await bot.sendMessage(chatId, message, options);

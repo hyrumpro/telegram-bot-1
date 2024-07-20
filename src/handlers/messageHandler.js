@@ -19,7 +19,7 @@ module.exports = async (bot, msg) => {
         case 'wallet':
             await verifyWalletAddress(bot, chatId, user, text);
             break;
-        case 'telegram_joined':
+        case 'telegram_join':
             await verifyTelegramJoin(bot, query);
             break;
         default:
