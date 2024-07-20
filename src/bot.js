@@ -3,6 +3,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const mongoose = require('mongoose');
 const commandHandler = require('./handlers/commandHandler');
 const messageHandler = require('./handlers/messageHandler');
+const { handleTaskSelection } = require('./utils/taskHandler');
 const connectDB = require('./config/database');
 
 // Connect to MongoDB
@@ -19,6 +20,10 @@ bot.on('message', (msg) => {
     if (!msg.text.startsWith('/')) {
         messageHandler(bot, msg);
     }
+});
+
+bot.on('callback_query', (query) => {
+    handleTaskSelection(bot, query);
 });
 
 bot.on('polling_error', (error) => {

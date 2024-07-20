@@ -1,17 +1,25 @@
-// commandHandler.js
+const User = require('../models/User');
+const { createWelcomeMessage } = require('../utils/messageTemplates');
+const { handleTaskSelection } = require('../utils/taskHandler');
 
 const commands = {};
 
-// Helper function to register commands
 function registerCommand(name, description, handler) {
     commands[name.toLowerCase()] = { description, handler };
 }
 
-// Register commands
 registerCommand('start', 'Start the bot', async (bot, msg) => {
     const chatId = msg.chat.id;
-    await bot.sendMessage(chatId, 'Welcome! Im your Telegram bot. Use /help to see available commands.');
+    const user = await User.findOneAndUpdate(
+        { telegramId: msg.from.id },
+        { username: msg.from.username },
+        { upsert: true, new: true }
+    );
+
+    const welcomeMessage = createWelcomeMessage(user.username);
+    await bot.sendMessage(chatId, welcomeMessage.text, welcomeMessage.options);
 });
+
 
 registerCommand('help', 'Show available commands', async (bot, msg) => {
     const chatId = msg.chat.id;
@@ -22,7 +30,13 @@ registerCommand('help', 'Show available commands', async (bot, msg) => {
     await bot.sendMessage(chatId, helpText);
 });
 
-// Example task command
+registerCommand('points', 'Check your current points', async (bot, msg) => {
+    const chatId = msg.chat.id;
+    const user = await User.findOne({ telegramId: msg.from.id });
+    await bot.sendMessage(chatId, `Your current points: ${user ? user.points : 0}`);
+});
+
+/*
 registerCommand('task', 'Get a random task', async (bot, msg) => {
     const chatId = msg.chat.id;
     const tasks = [
@@ -33,6 +47,9 @@ registerCommand('task', 'Get a random task', async (bot, msg) => {
     const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
     await bot.sendMessage(chatId, `Here's your task: ${randomTask}`);
 });
+*/
+
+
 
 // Main command handler function
 async function commandHandler(bot, msg) {
@@ -52,3 +69,4 @@ async function commandHandler(bot, msg) {
 }
 
 module.exports = commandHandler;
+
