@@ -42,8 +42,13 @@ async function handleTwitterTask(bot, chatId, user) {
 
 
 async function handleWalletTask(bot, chatId, user) {
+    if (user.completedTasks && user.completedTasks.telegram) {
+        await bot.sendMessage(chatId, "You've already completed the Wallet task.");
+        return;
+    }
     await bot.sendMessage(chatId, "Please send your ERC-20 wallet address to receive your $AGO tokens.");
     user.currentTask = 'wallet';
+    user.completedTasks.wallet = true;
     await user.save();
 }
 
