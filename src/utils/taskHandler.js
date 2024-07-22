@@ -42,7 +42,7 @@ async function handleTwitterTask(bot, chatId, user) {
 
 
 async function handleWalletTask(bot, chatId, user) {
-    if (user.completedTasks && user.completedTasks.telegram) {
+    if (user.completedTasks && user.completedTasks.wallet) {
         await bot.sendMessage(chatId, "You've already completed the Wallet task.");
         return;
     }
