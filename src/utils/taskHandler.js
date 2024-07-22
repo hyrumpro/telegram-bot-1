@@ -1,9 +1,9 @@
 // utils/taskHandler.js
 const User = require('../models/User');
 
-const TELEGRAM_GROUP_LINK = 'https://t.me/examplegroup';
+const TELEGRAM_GROUP_LINK = 'https://t.me/+uLgfILtx8jQ4Mjkx';
 const TWITTER_TWEET_LINK = 'https://twitter.com/AGOToken/status/1234567890';
-const TELEGRAM_GROUP_ID = '-100123456789';
+const TELEGRAM_GROUP_ID = '-1002233280256';
 
 async function handleTaskSelection(bot, query) {
     const chatId = query.message.chat.id;
@@ -25,6 +25,9 @@ async function handleTaskSelection(bot, query) {
             break;
         case 'wallet_task':
             await handleWalletTask(bot, chatId, user);
+            break;
+        case 'telegram_join':
+            await verifyTelegramJoin(bot, query);
             break;
     }
 
@@ -58,6 +61,11 @@ async function verifyTwitterTask(bot, chatId, user, twitterLink) {
 }
 
 async function handleTelegramTask(bot, chatId, user) {
+    if (user.completedTasks && user.completedTasks.telegram) {
+        await bot.sendMessage(chatId, "You've already completed the Telegram task.");
+        return;
+    }
+
     const message = `Please join our Telegram group:\n${TELEGRAM_GROUP_LINK}\n\nClick the button below once you've joined.`;
     const options = {
         reply_markup: {
@@ -72,29 +80,36 @@ async function verifyTelegramJoin(bot, query) {
     const userId = query.from.id;
     const user = await User.findOne({ telegramId: userId });
 
-    if (user.completedTasks.telegram) {
+    if (user.completedTasks && user.completedTasks.telegram) {
         await bot.answerCallbackQuery(query.id, { text: "You've already completed the Telegram task." });
         return;
     }
 
     try {
+        // First, try to get chat info
+        const chatInfo = await bot.getChat(TELEGRAM_GROUP_ID);
+        console.log('Successfully accessed group:', chatInfo.title);
+
+        // If successful, proceed to check member status
         const chatMember = await bot.getChatMember(TELEGRAM_GROUP_ID, userId);
 
         if (['member', 'administrator', 'creator'].includes(chatMember.status)) {
             user.points += 15;
+            if (!user.completedTasks) user.completedTasks = {};
             user.completedTasks.telegram = true;
             await user.save();
-            await bot.sendMessage(chatId, "Thanks for joining! You've earned 15 $AGO tokens.");
+            await bot.sendMessage(chatId, "Thanks for joining! You've earned 15 $PRO tokens.");
         } else {
             await bot.sendMessage(chatId, "It seems you haven't joined the group yet. Please join and try again.");
         }
     } catch (error) {
-        console.error('Error verifying group membership:', error);
-        await bot.sendMessage(chatId, "There was an error verifying your membership. Please try again later.");
+        console.error('Error accessing group or verifying membership:', error);
+        await bot.sendMessage(chatId, "There was an error verifying your membership. Please ensure the bot is an admin and try again later.");
     }
 
     await bot.answerCallbackQuery(query.id);
 }
+
 
 async function verifyWalletAddress(bot, chatId, user, address) {
     if (address.startsWith('0x') && address.length === 42) {
@@ -102,7 +117,7 @@ async function verifyWalletAddress(bot, chatId, user, address) {
         user.points += 15;
         user.currentTask = null;
         await user.save();
-        await bot.sendMessage(chatId, "Wallet address recorded! You've earned 15 $AGO tokens.");
+        await bot.sendMessage(chatId, "Wallet address recorded! You've earned 15 $PROtokens.");
     } else {
         await bot.sendMessage(chatId, "That doesn't look like a valid ERC-20 wallet address. Please try again.");
     }

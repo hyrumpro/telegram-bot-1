@@ -19,9 +19,6 @@ module.exports = async (bot, msg) => {
         case 'wallet':
             await verifyWalletAddress(bot, chatId, user, text);
             break;
-        case 'telegram_join':
-            await verifyTelegramJoin(bot, query);
-            break;
         default:
             await bot.sendMessage(chatId, "I didn't understand that. Please use the buttons to select a task, or use /start to see the main menu.");
     }
